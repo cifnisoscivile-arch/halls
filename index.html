@@ -3,43 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>???? ???? ??????? - ???? ????</title>
+    <title>نظام تتبع القاعات - سيدي إفني</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; text-align: center; padding: 15px; direction: rtl; }
-        .container { background: white; max-width: 450px; margin: auto; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        h2 { color: #003366; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        input[type="date"] { width: 85%; padding: 10px; margin: 15px 0; border: 1px solid #003366; border-radius: 6px; font-size: 16px; }
-        button { width: 90%; padding: 12px; background-color: #003366; color: white; border: none; border-radius: 6px; font-size: 17px; cursor: pointer; }
-        .hall-card { background: #fff; border: 1px solid #ddd; padding: 12px; margin-top: 10px; border-radius: 8px; text-align: right; display: flex; justify-content: space-between; align-items: center; }
+        /* إضافة خط يدعم العربية بشكل أفضل */
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+        
+        body { 
+            font-family: 'Cairo', sans-serif; 
+            background-color: #f0f2f5; 
+            text-align: center; 
+            padding: 15px; 
+            direction: rtl; 
+        }
+        .container { 
+            background: white; 
+            max-width: 450px; 
+            margin: 20px auto; 
+            padding: 25px; 
+            border-radius: 15px; 
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1); 
+        }
+        h2 { color: #003366; margin-bottom: 25px; }
+        input[type="date"] { 
+            width: 90%; 
+            padding: 12px; 
+            margin-bottom: 20px; 
+            border: 2px solid #003366; 
+            border-radius: 10px; 
+            font-size: 16px; 
+            font-family: inherit;
+        }
+        button { 
+            width: 95%; 
+            padding: 15px; 
+            background-color: #003366; 
+            color: white; 
+            border: none; 
+            border-radius: 10px; 
+            font-size: 18px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            transition: 0.3s;
+        }
+        button:hover { background-color: #00509e; }
+        .hall-card { 
+            background: #fff; 
+            border: 1px solid #eee; 
+            padding: 15px; 
+            margin-top: 15px; 
+            border-radius: 12px; 
+            text-align: right; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
         .status-busy { color: #d32f2f; font-weight: bold; }
         .status-free { color: #2e7d32; font-weight: bold; }
-        .details { font-size: 0.85em; color: #666; }
+        .details { font-size: 0.9em; color: #666; margin-top: 5px; display: block; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>?? ???? ??????? ???????</h2>
+    <h2>📱 استعلام استغلال القاعات</h2>
     <input type="date" id="searchDate" onchange="checkStatus()">
-    <button onclick="checkStatus()">????? ?????? ??</button>
+    <button onclick="checkStatus()">تحديث الحالة الآن 🔄</button>
     <div id="resultsList"></div>
 </div>
 
 <script>
+    // تعيين التاريخ لليوم تلقائياً
     document.getElementById('searchDate').valueAsDate = new Date();
 
     async function checkStatus() {
         const targetDate = document.getElementById('searchDate').value;
         const listDiv = document.getElementById('resultsList');
-        listDiv.innerHTML = "<p>???? ????? ????????...</p>";
+        listDiv.innerHTML = "<p>جاري فحص البيانات...</p>";
 
-        // ?????? ?????? ????? ??? ?????? ???? ??????? (????? ??????)
+        // الرابط الصحيح لسيرفر أوروبا كما في صورتك
         const url = "https://hallsystem-e74c7-default-rtdb.europe-west1.firebasedatabase.app/halls_status.json";
 
         try {
             const response = await fetch(url);
             const data = await response.json();
-            const myHalls = ["???? ??????", "???? ??????? ???????"];
+            
+            // القاعات الموجودة في نظامك
+            const myHalls = ["قاعة أفيندا", "قاعة المسيرة الخضراء"];
             let htmlContent = "";
 
             myHalls.forEach(hallName => {
@@ -47,26 +97,45 @@
                 if (data) {
                     for (let id in data) {
                         let r = data[id];
+                        // التحقق من اسم القاعة والتاريخ
                         if (r.hall === hallName && targetDate >= r.start && targetDate <= r.end) {
-                            booking = r; break;
+                            booking = r;
+                            break;
                         }
                     }
                 }
 
                 if (booking) {
-                    htmlContent += `<div class="hall-card" style="border-right: 6px solid #d32f2f;">
-                        <div><strong>${hallName}</strong><br><span class="details">?????: ${booking.org}</span></div>
-                        <span class="status-busy">?? ??????</span></div>`;
+                    htmlContent += `
+                        <div class="hall-card" style="border-right: 8px solid #d32f2f;">
+                            <div>
+                                <strong>${hallName}</strong>
+                                <span class="details">الجهة: ${booking.org}</span>
+                            </div>
+                            <span class="status-busy">🔴 محجوزة</span>
+                        </div>`;
                 } else {
-                    htmlContent += `<div class="hall-card" style="border-right: 6px solid #2e7d32;">
-                        <div><strong>${hallName}</strong><br><span class="details">????? ??????</span></div>
-                        <span class="status-free">?? ?????</span></div>`;
+                    htmlContent += `
+                        <div class="hall-card" style="border-right: 8px solid #2e7d32;">
+                            <div>
+                                <strong>${hallName}</strong>
+                                <span class="details">متاحة حالياً</span>
+                            </div>
+                            <span class="status-free">🟢 شاغرة</span>
+                        </div>`;
                 }
             });
+
             listDiv.innerHTML = htmlContent;
-        } catch (e) { listDiv.innerHTML = "<p style='color:red;'>? ??? ???????</p>"; }
+
+        } catch (e) {
+            listDiv.innerHTML = "<p style='color:red;'>❌ خطأ في الاتصال بقاعدة البيانات</p>";
+        }
     }
+
+    // الفحص فور فتح الصفحة
     checkStatus();
 </script>
+
 </body>
 </html>
