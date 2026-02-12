@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>???? ???? ??????? - ???? ????</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; text-align: center; padding: 15px; direction: rtl; }
+        .container { background: white; max-width: 450px; margin: auto; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h2 { color: #003366; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        input[type="date"] { width: 85%; padding: 10px; margin: 15px 0; border: 1px solid #003366; border-radius: 6px; font-size: 16px; }
+        button { width: 90%; padding: 12px; background-color: #003366; color: white; border: none; border-radius: 6px; font-size: 17px; cursor: pointer; }
+        .hall-card { background: #fff; border: 1px solid #ddd; padding: 12px; margin-top: 10px; border-radius: 8px; text-align: right; display: flex; justify-content: space-between; align-items: center; }
+        .status-busy { color: #d32f2f; font-weight: bold; }
+        .status-free { color: #2e7d32; font-weight: bold; }
+        .details { font-size: 0.85em; color: #666; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>?? ???? ??????? ???????</h2>
+    <input type="date" id="searchDate" onchange="checkStatus()">
+    <button onclick="checkStatus()">????? ?????? ??</button>
+    <div id="resultsList"></div>
+</div>
+
+<script>
+    document.getElementById('searchDate').valueAsDate = new Date();
+
+    async function checkStatus() {
+        const targetDate = document.getElementById('searchDate').value;
+        const listDiv = document.getElementById('resultsList');
+        listDiv.innerHTML = "<p>???? ????? ????????...</p>";
+
+        // ?????? ?????? ????? ??? ?????? ???? ??????? (????? ??????)
+        const url = "https://hallsystem-e74c7-default-rtdb.europe-west1.firebasedatabase.app/halls_status.json";
+
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+            const myHalls = ["???? ??????", "???? ??????? ???????"];
+            let htmlContent = "";
+
+            myHalls.forEach(hallName => {
+                let booking = null;
+                if (data) {
+                    for (let id in data) {
+                        let r = data[id];
+                        if (r.hall === hallName && targetDate >= r.start && targetDate <= r.end) {
+                            booking = r; break;
+                        }
+                    }
+                }
+
+                if (booking) {
+                    htmlContent += `<div class="hall-card" style="border-right: 6px solid #d32f2f;">
+                        <div><strong>${hallName}</strong><br><span class="details">?????: ${booking.org}</span></div>
+                        <span class="status-busy">?? ??????</span></div>`;
+                } else {
+                    htmlContent += `<div class="hall-card" style="border-right: 6px solid #2e7d32;">
+                        <div><strong>${hallName}</strong><br><span class="details">????? ??????</span></div>
+                        <span class="status-free">?? ?????</span></div>`;
+                }
+            });
+            listDiv.innerHTML = htmlContent;
+        } catch (e) { listDiv.innerHTML = "<p style='color:red;'>? ??? ???????</p>"; }
+    }
+    checkStatus();
+</script>
+</body>
+</html>
